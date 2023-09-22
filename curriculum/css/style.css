@@ -1,0 +1,85 @@
+body{
+    margin:0;
+    padding: 0;
+    border:0;
+    background-image: url(../img/fondo2.jpg);
+}
+
+.principal{
+    padding: 1em;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.contacto{
+    padding: 1em;
+    background-color: rgba(176, 190, 197, 0.5);
+    width: 20em;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0 -3em 3em rgba(0,0,0,0.1),
+    0 0  0 2px rgb(255,255,255),
+    0.3em 0.3em 1em rgba(0,0,0,0.3);
+}
+
+.infoContacto p{
+    background-color: rgb(248, 249, 249 );
+    padding: 0.5em;
+    border-radius: 5px;
+    font-family: 'Times New Roman', Times, serif;
+    font-weight: bold;
+    transition: 0.5s;
+}
+
+.perfil{
+    width: 15em;
+    margin:1em;
+    border-radius: 30px;
+    box-shadow: 0 -3em 3em rgba(0,0,0,0.1),
+    0 0  0 2px rgb(255,255,255),
+    0.3em 0.3em 1em rgba(0,0,0,0.3);
+    transition: 0.5s;
+}
+
+.perfil:hover{
+    width: 17em;
+    cursor: pointer;
+}
+
+.infoContacto p:hover{
+    font-size: large;
+    cursor: pointer;
+}
+
+.redes img{
+    width: 3em;
+    margin: 0.5em;
+    transition: 0.5s;
+}
+
+.redes img:hover{
+    width: 4em;
+    cursor: pointer;
+}
+
+.contenedor{
+    padding: 0.5em 1.5em;
+    background-color: rgba(38, 102, 207, 0.4);
+    width: 50em;
+    border-radius: 10px;
+    box-shadow: inset 0 -3em 3em rgba(0,0,0,0.1),
+    0 0  0 2px rgb(255,255,255),
+    0.3em 0.3em 1em rgba(0,0,0,0.3)
+}
+
+.contenedor article h1{
+    background-color: rgba(245, 242, 231, 0.8);
+    padding: 0.2em;
+    text-align: center;
+    box-shadow: 0 -3em 3em rgba(0,0,0,0.1),
+    0 0  0 2px rgb(255,255,255),
+    0.3em 0.3em 1em rgba(0,0,0,0.3);
+}
+

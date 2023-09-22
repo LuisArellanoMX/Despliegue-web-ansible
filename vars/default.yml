@@ -1,0 +1,13 @@
+---
+disable_default: yes
+mysql_root_password: " "
+app_user: "luis"            
+http_host_page_static: "www.larellano.com"     
+http_host_page_app: "app.larellano.com"
+http_conf_static: "www.larellano.com.conf" 
+http_conf_app: "app.larellano.com.conf"
+http_port: "80"             
+name_source_code_static: "curriculum"       
+name_source_code_app: "login"
+db_name: "usuario"       
+file_db: "usuario.sql"     

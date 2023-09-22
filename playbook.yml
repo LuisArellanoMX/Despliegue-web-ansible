@@ -1,0 +1,135 @@
+############################################################
+# Playbook para despliegue de una pagina web y una app web #
+# Luis Ernesto Arellano Hernandez 21/09/2023               #
+############################################################
+---
+- hosts: server1
+  become: true
+  vars_files:
+    - vars/default.yml
+
+  tasks:
+  # Actualizando paquetes
+    - name: Actualizando paquetes
+      apt: name={{ item }} update_cache=yes state=latest force_apt_get=yes
+      loop: [ 'aptitude' ]
+
+  # Instalando paquetes
+    - name: Instalando paquetes necesarios {apache, mysql-server, php, php-mysql}
+      apt: name={{ item }} update_cache=yes state=latest
+      loop: [ 'apache2', 'mysql-server', 'python3-pymysql', 'php', 'php-mysql', 'libapache2-mod-php' ]
+
+  # Configuracion de pagina statica
+    - name: Creacion de la carpeta para el codigo fuente de la pagina web
+      file:
+        path: "/var/www/{{ http_host_page_static }}"
+        state: directory
+        owner: "{{ app_user }}"
+        mode: '0755'
+
+    - name: Creando el archivo de configuracion para el host virtual de la pagina web
+      template:
+        src: "files/apache_s.conf.j2"
+        dest: "/etc/apache2/sites-available/{{ http_conf_static }}"
+      notify: Reload Apache
+
+    - name: Habilitando la pagina web con a2ensite
+      shell: /usr/sbin/a2ensite {{ http_conf_static }}
+      notify: Reload Apache
+
+  # Configuracion de aplicacion web con base de datos
+    - name: Creacion de la carpeta para el codigo fuente de la app web
+      file:
+        path: "/var/www/{{ http_host_page_app }}"
+        state: directory
+        owner: "{{ app_user }}"
+        mode: '0755'
+
+    - name: Creando el archivo de configuracion del host virtual de la app web
+      template:
+        src: "files/apache_a.conf.j2"
+        dest: "/etc/apache2/sites-available/{{ http_conf_app }}"
+      notify: Reload Apache
+
+
+    - name: Habilitando nuestra app web con a2ensite
+      shell: /usr/sbin/a2ensite {{ http_conf_app }}
+      notify: Reload Apache
+
+  # Desabilitando el sitio por defecto de Apache
+    - name: Desabilitando el sitio por defecto de Apache con a2dissite
+      shell: /usr/sbin/a2dissite 000-default.conf
+      when: disable_default
+      notify: Reload Apache
+    
+  # Configuracion del firewall
+    - name: "Configurando el firewall Abriendo el puerto {{ http_port }}"
+      ufw:
+        rule: allow
+        port: "{{ http_port }}"
+        proto: tcp
+
+  # Moviendo codigo fuente de la pagina web estatica
+    - name: Moviendo codigo fuente de la pagina web
+      copy:
+        src: "{{ name_source_code_static }}"
+        dest: "/var/www/{{ http_host_page_static }}"
+
+  # Moviendo codigo fuente de la aplicacion web con base de datos
+    - name: Moviendo codigo fuente de la app web
+      copy:
+        src: "{{ name_source_code_app }}"
+        dest: "/var/www/{{ http_host_page_app }}"
+
+    # Configurando MYSQL
+    - name: Cambiando la contraseña al usuario root
+      mysql_user:
+        name: root
+        password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Eliminando las cuentas anonimas
+      mysql_user:
+        name: ''
+        host_all: yes
+        state: absent
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+
+    - name: Eliminando las bases de datos de prueba
+      mysql_db:
+        name: test
+        state: absent
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+
+    - name: Creacion de la base de datos {{ db_name }}
+      mysql_db:
+        name: '{{ db_name }}' 
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+
+    - name: Agregar el archivo de restauracion .sql
+      copy:
+        src: '{{ file_db }}'
+        dest: '/tmp/{{ file_db }}'
+
+    - name: Poblando la base de datos
+      mysql_db:
+        name: '{{ db_name }}'
+        state: import
+        target: '/tmp/{{ file_db }}'
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+
+  handlers:
+    - name: Reload Apache
+      service:
+        name: apache2
+        state: reloaded
+
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted
